@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RWR",
+    "WCW",
+    "RWR"
+  ],
+  "key": {
+    "W": {
+      "item": "circuit-redstone_logic:wire"
+    },
+    "C": {
+      "item": "minecraft:crafting_table"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "circuit-redstone_logic:terminal",
+    "count": 1
+  }
+}

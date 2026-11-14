@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "circuit-redstone_logic:block/gate_variable_str",
+    "down": "circuit-redstone_logic:block/gate_variable_str",
+    "up": "circuit-redstone_logic:block/gate_variable_str",
+    "north": "circuit-redstone_logic:block/gate_variable_str",
+    "east": "circuit-redstone_logic:block/gate_variable_str",
+    "south": "circuit-redstone_logic:block/gate_variable_str",
+    "west": "circuit-redstone_logic:block/gate_variable_str"
+  }
+}

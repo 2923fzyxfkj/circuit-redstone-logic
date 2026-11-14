@@ -1,0 +1,36 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "kind": "unset"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/variable_unset"
+      }
+    },
+    {
+      "when": {
+        "kind": "null"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/variable_null"
+      }
+    },
+    {
+      "when": {
+        "kind": "int"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/variable_int"
+      }
+    },
+    {
+      "when": {
+        "kind": "str"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/variable_str"
+      }
+    }
+  ]
+}

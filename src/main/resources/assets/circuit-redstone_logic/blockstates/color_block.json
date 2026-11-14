@@ -1,0 +1,36 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "shade": "0"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/color_block"
+      }
+    },
+    {
+      "when": {
+        "shade": "1"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/color_block"
+      }
+    },
+    {
+      "when": {
+        "shade": "2"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/color_block"
+      }
+    },
+    {
+      "when": {
+        "shade": "3"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/color_block"
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "parent": "minecraft:block/cube",
+  "ambientocclusion": true,
+  "textures": {
+    "particle": "circuit-redstone_logic:block/hover_frame",
+    "down": "circuit-redstone_logic:block/hover_frame",
+    "up": "circuit-redstone_logic:block/hover_frame",
+    "north": "circuit-redstone_logic:block/hover_frame",
+    "east": "circuit-redstone_logic:block/hover_frame",
+    "south": "circuit-redstone_logic:block/hover_frame",
+    "west": "circuit-redstone_logic:block/hover_frame"
+  }
+}

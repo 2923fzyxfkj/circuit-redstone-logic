@@ -1,0 +1,28 @@
+{
+	"schemaVersion": 1,
+	"id": "circuit-redstone_logic",
+	"version": "${version}",
+	"name": "Circuit Redstone - Logic",
+	"description": "红石数字逻辑：二进制导线、AND/OR/NOT/XOR 逻辑门、限制信号器、输出任意信号器。",
+	"authors": [
+		"CircuitRedstone"
+	],
+	"license": "MIT",
+	"icon": "assets/circuit-redstone_logic/icon.png",
+	"accessWidener": "circuit_redstone_logic.accesswidener",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"l.circuit_redstone.logic.cas.CircuitRedstone"
+		],
+		"client": [
+			"l.circuit_redstone.logic.cas.client.CircuitRedstoneClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~1.20.4",
+		"java": ">=17",
+		"fabric-api": "*"
+	}
+}

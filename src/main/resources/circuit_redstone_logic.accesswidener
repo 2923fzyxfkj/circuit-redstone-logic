@@ -1,0 +1,5 @@
+accessWidener	v1	named
+
+# /circuit-debug info full-circuit 需要遍历"当前世界所有已加载区块"来收集全部电路方块，
+# 而原版只把这个迭代器留在 ThreadedAnvilChunkStorage 里（protected），故放宽为 public。
+accessible	method	net/minecraft/server/world/ThreadedAnvilChunkStorage	entryIterator	()Ljava/lang/Iterable;

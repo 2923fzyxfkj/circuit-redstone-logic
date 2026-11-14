@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "circuit-redstone_logic:block/gate_data_wire_error",
+    "down": "circuit-redstone_logic:block/gate_base",
+    "up": "circuit-redstone_logic:block/gate_data_wire_error",
+    "north": "circuit-redstone_logic:block/gate_data_wire_error",
+    "east": "circuit-redstone_logic:block/data_wire_arrow_error_right",
+    "south": "circuit-redstone_logic:block/gate_data_wire_error",
+    "west": "circuit-redstone_logic:block/data_wire_arrow_error_left"
+  }
+}

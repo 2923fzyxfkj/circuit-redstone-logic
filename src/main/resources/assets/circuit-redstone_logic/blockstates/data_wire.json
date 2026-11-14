@@ -1,0 +1,84 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north",
+        "error": "false"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/data_wire",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "error": "true"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/data_wire_error",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "error": "false"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/data_wire",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "error": "true"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/data_wire_error",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "error": "false"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/data_wire",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "error": "true"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/data_wire_error",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "error": "false"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/data_wire",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "error": "true"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/data_wire_error",
+        "y": 270
+      }
+    }
+  ]
+}

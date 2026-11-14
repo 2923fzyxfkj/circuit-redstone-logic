@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "circuit-redstone_logic:block/constant"
+      }
+    }
+  ]
+}

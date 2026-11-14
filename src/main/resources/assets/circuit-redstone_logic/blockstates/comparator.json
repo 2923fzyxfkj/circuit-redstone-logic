@@ -1,0 +1,84 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north",
+        "power": "0"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/comparator",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/comparator_on",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "power": "0"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/comparator",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/comparator_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "power": "0"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/comparator",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/comparator_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "power": "0"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/comparator",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15"
+      },
+      "apply": {
+        "model": "circuit-redstone_logic:block/comparator_on",
+        "y": 270
+      }
+    }
+  ]
+}
