@@ -108,7 +108,7 @@ Design conventions:
 1. Bump `version` in `gradle.properties` (`fabric.mod.json` references it through `${version}`).
 2. `gradlew build` and confirm `build/libs/circuit-redstone_logic-<version>.jar` exists.
 3. Unpack the jar and check `fabric.mod.json`: `version` and `license` must be correct.
-4. Package the distribution directory: jar + player README (English and Chinese) + LICENSE, zipped as `release/<version>.zip`.
+4. Create the GitHub release `v<version>` and attach the jar from `build/libs/` only. The release carries nothing else: README and LICENSE live in the repository.
 
 The published jar must be the remapped artifact from `build/libs`; the one in `build/devlibs` only works in a dev environment.
 How to tell: references to Minecraft classes must be `class_xxxx` (intermediary), not yarn names.

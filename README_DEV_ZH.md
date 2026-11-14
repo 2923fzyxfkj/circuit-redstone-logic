@@ -107,7 +107,7 @@ docs/DEVELOPMENT.md           技术细节（协议、调度、上限）
 1. 改 `gradle.properties` 的 `version`（`fabric.mod.json` 用 `${version}` 引用）。
 2. `gradlew build`，确认 `build/libs/circuit-redstone_logic-<版本>.jar` 生成。
 3. 解包检查 `fabric.mod.json`：`version` 与 `license` 必须正确。
-4. 打包分发目录：jar + 玩家向 README（中英）+ LICENSE，压成 `release/<版本>.zip`。
+4. 建 GitHub Release `v<版本>`，只上传 `build/libs/` 里的 jar。Release 里不放别的东西：README 与 LICENSE 以仓库里的为准。
 
 发布 jar 必须是 `build/libs` 下的 remapped 产物；`build/devlibs` 里的只能在开发环境使用。
 判断方法：类文件里对 Minecraft 的引用应为 `class_xxxx`（intermediary），而不是 yarn 名。
