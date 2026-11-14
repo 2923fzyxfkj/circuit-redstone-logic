@@ -1,6 +1,6 @@
 # 开发者文档（内部）
 
-> 面向玩家的使用说明在仓库根目录的 [README.md](../README.md)。本文件保留协议细节、更新模型、构建与自测方法，便于后续维护。
+> 面向玩家的使用说明在仓库根目录的 [README.md](../README.md)（英文）与 [README_ZH.md](../README_ZH.md)（中文）。本文件保留协议细节、更新模型、构建与自测方法，便于后续维护。
 
 # Circuit Redstone - Logic（circuit-redstone_logic）
 

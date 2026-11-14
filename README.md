@@ -1,471 +1,535 @@
 # Circuit Redstone - Logic
 
-**简体中文** | [English](README_EN.md)
+**English** | [简体中文](README_ZH.md)
 
-[![Minecraft 1.20.4](https://img.shields.io/badge/Minecraft-1.20.4-blue)](#安装与快速开始)
-[![Fabric](https://img.shields.io/badge/loader-Fabric-orange)](#安装与快速开始)
+[![Minecraft 1.20.4](https://img.shields.io/badge/Minecraft-1.20.4-blue)](#install-and-quick-start)
+[![Fabric](https://img.shields.io/badge/loader-Fabric-orange)](#install-and-quick-start)
 [![License MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-## 这是什么
+## What is this
 
-把红石从"强度"变成二进制逻辑：导线只传 0/1 且不衰减，逻辑门在同一游戏刻内收敛；常量、字符串、变量与数据线让电路能读出值、搬动值、写出值。
+Turns redstone from an analog strength into binary logic: wires carry only 0/1 and never decay,
+gates settle within the same game tick, and constants, strings, variables and data wires let a
+circuit read, move and write values.
 
-- 运行环境：客户端与服务端都要装（Fabric，Minecraft 1.20.4）
-- 依赖：Fabric Loader ≥ 0.20.1、Fabric API、Java 17+
-- 内容：18 个方块、3 条工作台配方、4 组指令，全部带中英文 tooltip
-- 当前版本 1.28.7，许可 MIT
-- 由 DeepSeek-v4.1-Flash 与 DeepSeekHarness 开发
+- Environment: client and server (Fabric, Minecraft 1.20.4)
+- Requires: Fabric Loader ≥ 0.20.1, Fabric API, Java 17+
+- Contents: 18 blocks, 3 crafting recipes, 4 command groups, all with English and Chinese tooltips
+- Version 1.28.7, MIT licensed
+- Developed by DeepSeek-v4.1-Flash and DeepSeekHarness
 
-它不做什么：不替代原版红石线（两者可以互通），不提供模拟量运算之外的数学功能，也不支持 1.20.4 以外的游戏版本。
+What it does not do: it does not replace vanilla redstone dust (the two interoperate), it provides no
+maths beyond analog levels, and it does not support game versions other than 1.20.4.
 
-## 安装与快速开始
+## Install and quick start
 
-1. 给 Minecraft 1.20.4 装 Fabric Loader 与 Fabric API。
-2. 把 `circuit-redstone_logic-1.28.7.jar` 放进 `mods/`。
-3. 启动游戏，创造模式物品栏里会出现 Circuit Redstone - Logic 分页；服务端也要装同一份 jar。
+1. Install Fabric Loader and Fabric API for Minecraft 1.20.4.
+2. Drop `circuit-redstone_logic-1.28.7.jar` into `mods/`.
+3. Launch the game: a Circuit Redstone - Logic tab appears in the creative inventory. Servers need the
+   same jar.
 
-最短可用电路，一个反相器：
-
-```text
-[红石块] ── 导线 ──→ [非门] ──→ 导线 ──→ [红石灯]
-```
-
-- 门带彩色图案的那一面是输出面，摆放时朝你的视线方向。
-- 输出面的对面是输入 A，左右两面是输入 B。
-- 红石块通电时导线为高电平，非门输出 0，灯灭；把红石块换成拉杆，拉一下灯就灭。
-
-导线与红石粉可以无损互转：红石粉与导线在背包工作台里都是 1:1 无序合成。
-
-## 方块一览
-
-信号类。
-
-| 方块 | id | 作用 | 端口 |
-| --- | --- | --- | --- |
-| 导线 | `wire` | 传 0/1，不衰减，六向可连 | 任意面，对外给 15 |
-| 与门 | `and_gate` | `A AND B` | A=背面，B=左/右 |
-| 或门 | `or_gate` | `A OR B` | A=背面，B=左/右 |
-| 非门 | `not_gate` | `NOT A` | A=背面 |
-| 异或门 | `xor_gate` | `A XOR B` | A=背面，B=左/右 |
-| 限制信号器 | `limiter` | `min(A, B)`，按 0..15 电平算 | A=背面，B=左/右 |
-| 信号增强器 | `amplifier` | 输入大于 0 就输出 15 | A=背面 |
-
-模拟与传感类。
-
-| 方块 | id | 作用 | 输入 / 输出 |
-| --- | --- | --- | --- |
-| 扫描器 | `scanner` | 输出 0..15 电平 | 左、右、上各扫 15 格 |
-| 亮度传感器 | `brightness_sensor` | 输出周围光照 0..15 | 无输入 |
-| 比较器 | `comparator` | 比较两个常量，输出一位 | 后方常量=A，右方常量=B，左方等级=模式 |
-| 时钟 | `clock` | 每 N tick 输出一拍高电平 | `/circuit-set <tick>` 设 N |
-
-数据类。
-
-| 方块 | id | 作用 | 怎么写值 |
-| --- | --- | --- | --- |
-| 常量 | `constant` | 存一个整数 | `/circuit-set 7` |
-| 字符串 | `string_value` | 存一段文本（≤256 字符） | `/circuit-set hello` |
-| 变量 | `variable` | 一个方块存一个 int / str / null | `/circuit-set int=42` |
-| 数据线 | `data_wire` | 把背面的值写进正面的数据方块 | 箭头方向即流向 |
-
-装饰与辅助类。
-
-| 方块 | id | 作用 | 获取 |
-| --- | --- | --- | --- |
-| 悬空方块 | `hover_block` | 能托红石粉的完整方块，玩家可穿过 | 终端 4 导线换 16 个 |
-| 纯色方块 | `color_block` | 存一个 RGB 颜色 | 终端 4 导线换 16 个 |
-| 隐形告示牌 | `hidden_sign` | 方块本体隐形，只显示文字 | 终端 4 导线换 1 个 |
-
-## 接线规则
-
-门的端口，最容易搞反的地方：
+Smallest working circuit, an inverter:
 
 ```text
-                 左（B）
-                    │
-   背面（A）─── [ 门 ] ───→ 输出面
-                    │
-                 右（B）
+[redstone block] ── wire ──→ [NOT gate] ──→ wire ──→ [lamp]
 ```
 
-- 摆放时带彩色图案的那一面是输出面，朝向你的视线方向。
-- 背面是输入 A，左右是输入 B；两边同时有信号时取左边。
-- 非门只有 A。输入可以由红石块、拉杆、红石粉、导线或别的门的输出面驱动。
-- 左右是相对的：站在输入侧、面朝输出面看过去，左手边就是 B 的左侧。
+- The colored face of a gate is its output face, and it points where you look when placing.
+- The face behind the gate is input A; the two sides are input B.
+- While the redstone block powers the wire, the NOT gate outputs 0 and the lamp is off. Swap the block
+  for a lever and toggle it.
 
-逻辑门的输入先按"红石等级大于 0 即高"判定，再做布尔运算，输出只有 0 或 15。因此强度 3 的红石粉喂进与门时算高电平，不是 3。
+Wires and vanilla dust convert both ways without loss: dust and wire are 1:1 shapeless recipes.
 
-导线与红石之间的转换规则：
+## Blocks at a glance
 
-| 方向 | 规则 |
+Signal blocks.
+
+| Block | id | What it does | Ports |
+| --- | --- | --- | --- |
+| Wire | `wire` | carries 0/1, no decay, six-way | any face; outputs 15 |
+| AND gate | `and_gate` | `A AND B` | A = back, B = left/right |
+| OR gate | `or_gate` | `A OR B` | A = back, B = left/right |
+| NOT gate | `not_gate` | `NOT A` | A = back |
+| XOR gate | `xor_gate` | `A XOR B` | A = back, B = left/right |
+| Signal limiter | `limiter` | `min(A, B)` on levels 0..15 | A = back, B = left/right |
+| Signal amplifier | `amplifier` | any input above 0 → 15 | A = back |
+
+Analog and sensing blocks.
+
+| Block | id | What it does | Input / output |
+| --- | --- | --- | --- |
+| Signal scanner | `scanner` | outputs a level 0..15 | scans 15 blocks up, left, right |
+| Brightness sensor | `brightness_sensor` | outputs light level 0..15 | no input |
+| Comparator | `comparator` | compares two constants, one bit out | back=A, right=B, left level=mode |
+| Clock | `clock` | pulses every N ticks | `/circuit-set <ticks>` sets N |
+
+Data blocks.
+
+| Block | id | What it does | How to write |
+| --- | --- | --- | --- |
+| Constant | `constant` | stores one integer | `/circuit-set 7` |
+| String | `string_value` | stores up to 256 characters | `/circuit-set hello` |
+| Variable | `variable` | one int / str / null per block | `/circuit-set int=42` |
+| Data wire | `data_wire` | copies the value from its back to the block in front | arrow = flow direction |
+
+Decoration and helpers.
+
+| Block | id | What it does | How to get |
+| --- | --- | --- | --- |
+| Hover block | `hover_block` | full block that holds dust, you walk through | terminal: 4 wires → 16 |
+| Solid color block | `color_block` | stores one RGB color | terminal: 4 wires → 16 |
+| Hidden sign | `hidden_sign` | the block is invisible, only text is drawn | terminal: 4 wires → 1 |
+
+## Wiring rules
+
+Gate ports, the part everyone gets backwards:
+
+```text
+                left (B)
+                   │
+   back (A) ─── [ gate ] ───→ output face
+                   │
+                right (B)
+```
+
+- The colored face is the output face and points where you look when placing.
+- The face behind it is input A; the sides are input B, and the left side wins when both are powered.
+- A NOT gate has only A. Inputs can be driven by redstone blocks, levers, dust, wires or another
+  gate's output face.
+- Left and right are relative to the gate: stand on the input side and look at the colored face, and
+  your left hand is B's left.
+
+Gates read every input as "redstone level above 0 is HIGH", then run the boolean operation. Output is
+always 0 or 15, so dust at strength 3 feeding an AND gate counts as HIGH, not as 3.
+
+Conversion rules between dust and wires:
+
+| Direction | Rule |
 | --- | --- |
-| 红石 → 导线 | 等级 0 为低，大于 0 为高 |
-| 导线 → 红石 | 高电平给 15 |
-| 导线之间 | 六向连接，不衰减 |
-| 导线与红石粉 | 相邻即电气互通，双向可转 |
+| redstone → wire | level 0 is LOW, above 0 is HIGH |
+| wire → redstone | HIGH emits 15 |
+| wire to wire | six-way, no decay |
+| wire to vanilla dust | adjacent is connected, both ways |
 
-两个后果：导线只读紧贴那一格红石粉的真实强度，所以红石粉衰减到 0 的位置接上导线就是低电平；导线只对外提供弱电，不会隔着实心方块漏到隔壁电路。
+Two consequences: a wire reads only the single dust block next to it, so dust decayed to 0 makes the
+wire LOW; and a wire emits weak power only, so it never leaks through solid blocks.
 
-限制器、扫描器、增强器、亮度传感器与比较器都按 0..15 电平工作，并且都暴露当前电平，因此原版比较器也能读出数值。常量、字符串、变量不发射红石，只作为数据被读取。
+Limiter, scanner, amplifier, brightness sensor and comparator all work on 0..15 levels and all expose
+their current level, so a vanilla comparator reads them too. Constants, strings and variables emit no
+redstone and are read as data only.
 
-速度方面，导线网络、逻辑门、限制器与增强器在同一游戏刻内收敛，链路再长也不会按"一格一红石刻"累加。每 tick 有求值预算，极长或强反馈的电路可能延续到下一 tick。与原版方块互操作时受原版 20 Hz 限制。
+On speed: wire networks, gates, limiters and amplifiers settle within the same tick, so a long chain
+does not add one redstone tick per block. A per-tick evaluation budget exists, so extremely long or
+heavily oscillating circuits may continue on the next tick. Interop with vanilla blocks runs at
+vanilla 20 Hz.
 
-## 方块详解
+## Block reference
 
-### 导线 `wire`
+### Wire `wire`
 
-六向连接，不衰减，对外只给弱电。与原版红石粉互通时，导线一侧会画连接臂，但原版红石粉不会朝导线画臂，看起来像断开，功能正常。单张网络上限 4096 格，超出会截断并写日志。
+Six-way connection, no decay, weak power only. When it meets vanilla dust the wire draws a connecting
+arm toward the dust, but vanilla dust never draws an arm toward the wire — it looks disconnected and
+works fine. A single network is capped at 4096 positions; beyond that it is truncated with a log
+warning.
 
-### 逻辑门
+### Gates
 
-| 方块 | 真值表 |
+| Block | Truth table |
 | --- | --- |
-| 与门 | 两个都高才输出 15 |
-| 或门 | 任意一个高就输出 15 |
-| 非门 | A 高输出 0，A 低输出 15 |
-| 异或门 | 两个不同才输出 15 |
+| AND gate | outputs 15 only when both inputs are HIGH |
+| OR gate | outputs 15 when either input is HIGH |
+| NOT gate | outputs 0 when A is HIGH, 15 when A is LOW |
+| XOR gate | outputs 15 when the inputs differ |
 
-用异或门求"和"、与门求"进位"，两个门就是一个半加器。
+XOR for the sum bit and AND for the carry gives a half adder.
 
-### 限制信号器 `limiter`
+### Signal limiter `limiter`
 
-输出 `min(A, B)`，A 在背面，B 在左右（左优先）。它按电平算，不是按位：A=12、B=5 时输出 5。典型用途是把一个 0..15 的值钳到另一个上限内。
+Outputs `min(A, B)`, with A on the back and B on the sides (left wins). It works on levels, not bits:
+A = 12 and B = 5 outputs 5. Typical use: clamp a 0..15 value to an upper bound.
 
-### 信号增强器 `amplifier`
+### Signal amplifier `amplifier`
 
-背面有信号就输出 15，否则 0。它相当于重新整形加隔离：任意强度变满强度，输出侧的回流不会影响输入侧。可以替代中继器且无延迟。
+Any input above 0 on the back outputs 15, otherwise 0. It re-shapes and isolates: any strength becomes
+full strength and the output side cannot feed back into the input. A zero-delay repeater replacement.
 
-### 扫描器 `scanner`
+### Signal scanner `scanner`
 
-沿上方、左侧、右侧各看 15 格，左右相对方块朝向。
+Scans 15 blocks up, left and right; left and right are relative to the block's facing.
 
-1. 射线上有常量方块时直接输出该常量的值，优先级上大于左、左大于右，同方向取最近的；超出 0..15 会夹取。
-2. 没有任何常量时统计非空气方块个数：上方有方块就取上方的数量，否则左右取较大的数量。
+1. A constant block on a ray wins: the scanner outputs that constant, with up above left and left
+   above right, nearest first on a given ray. Values outside 0..15 are clamped.
+2. With no constant anywhere, it counts non-air blocks: the up count is used when the up ray sees
+   anything, otherwise the larger of the left and right counts.
 
-它会把水、树叶、红石粉、导线、火把与墙后的方块都算进数量，数字异常时先检查射线。扫描每 10 tick 重扫一次，相邻方块变化会立刻重算。
+Water, leaves, dust, wires, torches and blocks behind walls all count, so check the rays when a number
+looks wrong. It rescans every 10 ticks and reacts immediately to an adjacent block change.
 
 ```text
-[常量=7]                 ← 射线里放常量
-    ↑
-[扫描器] ──→ 导线        （输出固定值 7）
+[constant = 7]              ← a constant on the ray
+     ↑
+[scanner] ──→ wire          (outputs exactly 7)
 ```
 
-### 亮度传感器 `brightness_sensor`
+### Brightness sensor `brightness_sensor`
 
-输出周围（自身加六个相邻位置）最亮处的光照等级 0..15。传感器本身遮光，所以读数来自它挨着的空间：露天 15，火把旁 14，被不透光方块包住 0。光照变化不触发方块更新，它每 10 tick 轮询一次。
+Outputs the brightest light level around it (itself plus six neighbours) from 0 to 15. The sensor is
+opaque, so its own level is always 0 and the reading comes from the space next to it: open sky 15, next
+to a torch 14, sealed inside opaque blocks 0. Light changes cause no block updates, so it polls every
+10 ticks.
 
-### 比较器 `comparator`
+### Comparator `comparator`
 
-后方接常量作操作数 A，右方接常量作操作数 B，左方红石等级 1..5 决定模式。
+A constant on the back is operand A, a constant on the right is operand B, and the left redstone level
+1..5 selects the mode.
 
-| 左方等级 | 模式 | 成立条件 |
+| Left level | Mode | True when |
 | --- | --- | --- |
-| 1 | 小于 | `A < B` |
-| 2 | 小于等于 | `A <= B` |
-| 3 | 等于 | `A == B` |
-| 4 | 大于等于 | `A >= B` |
-| 5 | 大于 | `A > B` |
+| 1 | less than | `A < B` |
+| 2 | less or equal | `A <= B` |
+| 3 | equal | `A == B` |
+| 4 | greater or equal | `A >= B` |
+| 5 | greater than | `A > B` |
 
-成立输出 15，否则 0。左方等级为 0 或大于 5 时模式无效，输出 0；后方或右方不是常量方块也输出 0。比较使用常量里的原始整数，负数与大于 15 的数都能比，不夹取。
+True outputs 15, false outputs 0. A left level of 0 or above 5 is an invalid mode and outputs 0; a
+missing constant on the back or right also outputs 0. Comparison uses the raw integers in the
+constants, so negative values and values above 15 work and are not clamped.
 
-### 时钟 `clock`
+### Clock `clock`
 
-准星对着它执行 `/circuit-set <tick>` 设周期 N，N 至少为 1。之后每 N tick 从输出面打出一拍高电平，其余时间为 0。N=1 是常高；没设置过周期时一直为 0。周期与相位存在方块里，世界重载后继续走。
+Aim at it and run `/circuit-set <ticks>` to set the period N, at least 1. It then emits one tick of
+HIGH on its output face every N ticks and stays 0 otherwise. `N = 1` is constant HIGH; with no period
+set it stays 0. Period and phase live in the block and survive a world reload.
 
-### 常量 `constant`
+### Constant `constant`
 
-存一个整数，可以是负数或大于 15。它不发射红石，只当数据源：扫描器读它，数据线搬它，比较器把它当操作数。
+Stores one integer, negative or above 15. It emits no redstone and is a data source only: the scanner
+reads it, a data wire copies it, the comparator uses it as an operand.
 
-### 字符串 `string_value`
+### String `string_value`
 
-存一段最长 256 字符的文本。不发射红石，目前没有方块读它，但数据线可以把它搬进另一个字符串方块。
+Stores up to 256 characters. It emits no redstone and no block reads it today, but a data wire can
+copy it into another string block.
 
-### 变量 `variable`
+### Variable `variable`
 
-一个方块只存一个变量，类型由最后一次写入决定，可以随时改。
-
-```text
-/circuit-set int=42          → 存整数 42
-/circuit-set str="你好"      → 存文本 你好（引号是语法，不进值里）
-/circuit-set null            → 设成空值 null
-```
-
-贴图颜色跟随类型：橙为整数，蓝为文本，紫为空值，灰为从未设置。文本必须加双引号，这样 `str=42` 与 `int=42` 才不会混。
-
-`null` 是"有值但为空"：数据线搬它时，写进常量得到 0，写进字符串得到空串。从未设置则是没有源，数据线不会写任何东西。这个区别在数据线一节会用到。
-
-变量可以被数据线读取，也可以被数据线写入。挖掉再放下值还在，掉落物带着数据，tooltip 会显示当前值，中键取方块同样带数据。
-
-### 数据线 `data_wire`
-
-把背面的值写进正面的数据方块。侧面箭头指向数据流向，背面读、正面写，每 tick 传一次，不需要红石信号，可串联最多 64 跳，遇到环放弃。
-
-背面的源有四种：
-
-- 常量方块，搬它的整数。
-- 字符串方块，搬它的文本。
-- 变量方块，搬它当前的 int、str 或 null，未设置时不搬。
-- 红石信号（红石粉、拉杆、导线、门的输出面），把它的等级 0..15 当整数。
-
-背面是空气视为没接东西，目标保持原值。正面可以是常量、字符串或变量。
-
-| 源 → 目标 | 结果 |
-| --- | --- |
-| 常量 → 常量 | 原样搬运 |
-| 常量 → 字符串 | 写成十进制文本 |
-| 红石等级 → 常量 | 写入该等级 |
-| 红石等级 → 字符串 | 写入该等级的文本 |
-| 字符串 → 字符串 | 原样搬运 |
-| 字符串 → 常量 | 内容必须是整数，否则失败 |
-| null → 常量 | 写 0 |
-| null → 字符串 | 写空串 |
-
-写入变量时按变量当前类型转换：已经是 int 就按整数写，已经是 str 就按文本写，未设置或已是 null 则跟随源的类型。转换失败时数据线变成红底错误贴图，把值改对后自动恢复。
-
-### 悬空方块 `hover_block`
-
-看起来是中间透明、四边一圈细白框的方块，功能上是完整方块。
-
-| 特性 | 说明 |
-| --- | --- |
-| 能托东西 | 红石粉、火把、压力板等需要支撑的方块可以放在上面 |
-| 玩家能穿过 | 没有碰撞箱，也站不上去 |
-| 能看穿 | 只有一圈白框，不挡视线 |
-| 不参与逻辑 | 不导电、不存数据、不接导线 |
-| 获取 | 终端 4 导线换 16 个 |
-
-它虽然能看穿，但光照上仍按实心方块算，会挡光。这是"能托住红石粉"的前提。
-
-### 纯色方块 `color_block`
-
-放下时是黑色，准星对着它执行 `/circuit-set #12AB34`，下一个游戏刻变成新颜色。支持 `#RRGGBB`、`RRGGBB` 与 `0xRRGGBB`，非法颜色会报错。终端 4 导线换 16 个。
-
-### 隐形告示牌 `hidden_sign`
-
-和原版告示牌一样能立起来、能存文字，但方块本体完全不可见，只画文字。
-
-- 准星对着它执行 `/circuit-set <文字>` 设置文本。
-- 文本为空时显示斜体灰色的"请输入文本..."。
-- 写 `/circuit-set ""` 清空。
-- 文字白色，最多 4 行，自动换行，正反两面都能看到。
-- 没有碰撞箱，不参与红石或数据逻辑。
-
-## 指令
-
-以下指令都不需要管理员权限，前提写在各节里。
-
-### 工作台配方
-
-| 产物 | 材料 |
-| --- | --- |
-| 导线 ×1 | 红石粉 ×1，无序 |
-| 红石粉 ×1 | 导线 ×1，无序 |
-| 电路终端 ×1 | 有序：`红石 导线 红石` / `导线 工作台 导线` / `红石 导线 红石` |
-
-其他 17 个方块没有工作台配方，一律用电路终端兑换。
-
-### 电路终端
+One variable per block. Its type is set by the last write and can change at any time.
 
 ```text
-/circuit-terminal list                # 列出全部可换物品
-/circuit-terminal get and_gate        # 4 导线换 1 个与门
-/circuit-terminal get and_gate 3      # 3 批 = 3 个，花 12 导线
-/circuit-terminal get hover_block 32  # 悬空方块一批 16 个：2 批，花 8 导线
+/circuit-set int=42          → stores the integer 42
+/circuit-set str="hello"     → stores the text hello (quotes are syntax)
+/circuit-set null            → sets the empty value null
 ```
 
-| 规则 | 说明 |
+The texture follows the type: orange for int, blue for string, purple for null, grey for never set.
+Text must be quoted, which keeps `str=42` and `int=42` apart.
+
+`null` is a value that is empty: a data wire copies it, and it becomes 0 in a constant or the empty
+string in a string block. Never-set is different — it is no source at all, so a data wire writes
+nothing. The data wire section below relies on that difference.
+
+A data wire can read a variable and also write into it. Breaking and re-placing keeps the value: the
+dropped item carries the data, its tooltip shows the stored value, and pick-blocking gives the same
+item with data.
+
+### Data wire `data_wire`
+
+Copies the value on its back into the data block in front. Side arrows point in the flow direction,
+the back reads and the front writes, it transfers once per tick without any redstone signal, chains up
+to 64 wires, and abandons a loop.
+
+The back can be one of four sources:
+
+- a constant block, copying its integer;
+- a string block, copying its text;
+- a variable block, copying its current int, str or null (nothing while unset);
+- a redstone signal (dust, lever, wire, gate output), using its level 0..15 as an integer.
+
+Air on the back means nothing is connected and the target keeps its value. The front can be a
+constant, a string or a variable.
+
+| Source → target | Result |
 | --- | --- |
-| 前提 | 背包里带着电路终端 |
-| 计价 | 按批算，每批 4 导线 |
-| 一批多少 | 多数方块 1 个，悬空方块与纯色方块 16 个 |
-| 自定义数量 | 必须是整批，价格等于批数乘 4 |
-| 命名空间 | 写 `and_gate` 或 `circuit-redstone_logic:and_gate` 都行 |
-| 限制 | 不能用终端换终端 |
-| 掉落 | 方块挖掉会掉自己，可反复搬运 |
+| constant → constant | copied as is |
+| constant → string | decimal text |
+| redstone level → constant | that level |
+| redstone level → string | that level as text |
+| string → string | copied as is |
+| string → constant | the text must be an integer, otherwise it fails |
+| null → constant | writes 0 |
+| null → string | writes the empty string |
 
-兑换成功后聊天栏会写明数量，例如"已获得 16 个 悬空方块（消耗 4 个导线）。"
+Writing into a variable converts to its current type: an int variable takes an integer, a string
+variable takes text, and an unset or null variable follows the source type. A failed conversion turns
+the wire into the red error texture; fix the value and it recovers by itself.
 
-### 改值 `/circuit-set`
+### Hover block `hover_block`
 
-| 方块 | 写什么 | 例子 |
+Looks like a transparent block with a thin white frame, but it is a full block.
+
+| Property | Detail |
+| --- | --- |
+| Holds things | dust, torches and pressure plates can be placed on top |
+| Walk through | no collision box, and you cannot stand on it |
+| See through | only a white frame, so it does not block the view |
+| No logic | not conductive, stores nothing, does not connect to wires |
+| Cost | terminal: 4 wires → 16 blocks |
+
+It is see-through but still blocks light like a solid block. That is the price for holding redstone
+dust on top.
+
+### Solid color block `color_block`
+
+Placed as black. Aim at it and run `/circuit-set #12AB34`; the color appears on the next game tick.
+It accepts `#RRGGBB`, `RRGGBB` and `0xRRGGBB`, and rejects invalid colors with a message. Terminal: 4
+wires → 16 blocks.
+
+### Hidden sign `hidden_sign`
+
+It stands and stores text like a vanilla sign, but the block itself is completely invisible — only
+the text is drawn.
+
+- Aim at it and run `/circuit-set <text>` to set the text.
+- While the text is empty it shows an italic grey `Type something...`.
+- `/circuit-set ""` clears the text.
+- Text is white, up to 4 lines, wrapped automatically, visible from both sides.
+- It has no collision box and takes no part in redstone or data logic.
+
+## Commands
+
+None of these commands needs operator permission; the requirement is written in each section.
+
+### Crafting recipes
+
+| Result | Ingredients |
+| --- | --- |
+| 1 wire | 1 redstone dust, shapeless |
+| 1 redstone dust | 1 wire, shapeless |
+| 1 circuit terminal | shaped: `redstone wire redstone` / `wire crafting table wire` / `redstone wire redstone` |
+
+The other 17 blocks have no crafting recipe and are bought with the circuit terminal.
+
+### Circuit terminal
+
+```text
+/circuit-terminal list                # every item that can be bought
+/circuit-terminal get and_gate        # 4 wires for one AND gate
+/circuit-terminal get and_gate 3      # 3 batches = 3 gates, costs 12 wires
+/circuit-terminal get hover_block 32  # 16 per batch: 2 batches, costs 8 wires
+```
+
+| Rule | Detail |
+| --- | --- |
+| Requirement | a circuit terminal in your inventory |
+| Price | 4 wires per batch |
+| Batch size | 1 for most blocks, 16 for hover and color blocks |
+| Custom amount | must be whole batches; price = batches × 4 |
+| Namespace | `and_gate` and `circuit-redstone_logic:and_gate` both work |
+| Not allowed | you cannot buy a terminal with a terminal |
+| Drops | every block drops itself and can be moved |
+
+The success message states the amount, for example `Gave 16x Hover Block for 4 wires.`
+
+### Writing values `/circuit-set`
+
+| Block | Value | Example |
 | --- | --- | --- |
-| 常量 | 整数 | `/circuit-set 7` |
-| 字符串 | 文本，最多 256 字符 | `/circuit-set hello world` |
-| 变量 | `int=…`、`str="…"` 或 `null` | `/circuit-set int=42` |
-| 隐形告示牌 | 文字，`""` 清空 | `/circuit-set hello` |
-| 纯色方块 | 十六进制颜色 | `/circuit-set #12AB34` |
-| 时钟 | 周期，至少 1 tick | `/circuit-set 20` |
+| Constant | integer | `/circuit-set 7` |
+| String | text, up to 256 characters | `/circuit-set hello world` |
+| Variable | `int=…`, `str="…"` or `null` | `/circuit-set int=42` |
+| Hidden sign | text, `""` clears it | `/circuit-set hello` |
+| Solid color block | hex color | `/circuit-set #12AB34` |
+| Clock | period, at least 1 tick | `/circuit-set 20` |
 
-瞄准不是必须的，可以用坐标形式 `/circuit-set <x> <y> <z> <值>`，控制台与命令方块都能用。写错类型会给出明确报错，例如"不是整数""不是十六进制颜色""频率必须是大于等于 1 的整数"；变量只写 `42` 会提示改成 `int=42`。
+Aiming is optional: `/circuit-set <x> <y> <z> <value>` works from the console and command blocks.
+Wrong values produce explicit errors such as "not an integer", "not a hex colour" and "the frequency
+must be an integer >= 1"; a bare `42` on a variable asks you to write `int=42`.
 
-### 读值 `/circuit-read`
-
-```text
-/circuit-read                     # 读准星指着的常量、字符串或变量
-/circuit-read <x> <y> <z>         # 按坐标读
-```
-
-输出格式固定为 `<方块名> (<x>, <y>, <z>)：<值>`，例如：
+### Reading values `/circuit-read`
 
 ```text
-常量 (30, 100, 1)：20
-字符串 (32, 100, 1)："hello world"
-变量 (33, 100, 1)：42
-变量 (35, 100, 1)：（未设置）
+/circuit-read                     # the constant, string or variable you are aiming at
+/circuit-read <x> <y> <z>         # read at a position
 ```
 
-英文语言环境下冒号是半角。
-
-### 调试 `/circuit-debug`
-
-组电路或排查问题时用，不需要管理员权限，控制台与命令方块也能执行。
+The output format is `<block name> (<x>, <y>, <z>): <value>`, for example:
 
 ```text
-/circuit-debug info full-circuit             # 导出世界里全部电路方块
-/circuit-debug test start <x> <y> <z>        # 推演该坐标所在的导线网络
-/circuit-debug test dead-loop <x> <y> <z>    # 推演并检测死循环
-/circuit-debug test stop [id]                # 停止推演
-/circuit-debug run-chart <A> <B> <tick>      # 录运行图
-/circuit-debug run-video <A> <B> <tick>      # 录动画
+Constant (30, 100, 1): 20
+String (32, 100, 1): "hello world"
+Variable (33, 100, 1): 42
+Variable (35, 100, 1): (not set)
 ```
 
-| 子指令 | 作用 |
+Chinese locales use the full-width colon.
+
+### Debug `/circuit-debug`
+
+For building and troubleshooting circuits. No operator permission needed; the console and command blocks can run it too.
+
+```text
+/circuit-debug info full-circuit             # dump every circuit block in the world
+/circuit-debug test start <x> <y> <z>        # simulate the wire network at that position
+/circuit-debug test dead-loop <x> <y> <z>    # simulate and detect dead loops
+/circuit-debug test stop [id]                # stop a simulation
+/circuit-debug run-chart <A> <B> <tick>      # record a chart
+/circuit-debug run-video <A> <B> <tick>      # record an animation
+```
+
+| Subcommand | What it does |
 | --- | --- |
-| `info full-circuit` | 把已加载区块里的电路方块全列出来，一条聊天消息一个方块，格式 `<方块名> (<x>, <y>, <z>) [<SNBT>]`；不需要瞄准，也不截断 |
-| `test start <x> <y> <z>` | 在沙盒里推演该坐标所在的导线网络，逐条播报状态变化，最后给出结束原因、tick 数与变化数 |
-| `test dead-loop <x> <y> <z>` | 同上，但实时检测死循环；一旦发现会红字警告并给出振荡周期（tick） |
-| `test stop [id]` | 不带 id 就停掉自己全部推演，带 id 停指定的那一个 |
-| `run-chart <A> <B> <tick>` | 记录 A~B（对角线两个坐标）在 N tick 内的方块变化，结束后渲染运行图与文本清单 |
-| `run-video <A> <B> <tick>` | 同一份记录渲染成动画 GIF，装了 ffmpeg 时另出一份 MP4 |
+| `info full-circuit` | Lists every circuit block in the loaded chunks, one chat message per block as `<name> (<x>, <y>, <z>) [<SNBT>]`. No aiming, no truncation. |
+| `test start <x> <y> <z>` | Simulates the wire network at that position in a sandbox, reports every state change, then prints the finish reason with the tick count and the change count. |
+| `test dead-loop <x> <y> <z>` | Same run with live dead-loop detection; a detected oscillation shows a red warning with its period in ticks. |
+| `test stop [id]` | Without an id it stops all of your simulations, with an id it stops that one. |
+| `run-chart <A> <B> <tick>` | Records every block change in the region A~B (two opposite corners) for N ticks, then renders a chart image and a text change list. |
+| `run-video <A> <B> <tick>` | Renders the same recording as an animated GIF, plus an MP4 when ffmpeg is installed. |
 
-细节：
+Details:
 
-- `test start` 的提示里直接给出推演 id，复制它就能 `test stop <id>`；同一时间最多 4 个推演在跑。
-- 推演要求该坐标或它相邻六面里有导线，否则报"这里没有可推演的导线网络"。
-- 结束原因有六种：稳定、死循环、被手动停止、达到 tick 上限、超出时间预算、出错。
-- `run-chart` 的 tick 数范围 1..2400，选区最多 16384 格；一列一个 tick、一行一个方块，颜色与数字表示状态。
-- `run-video` 的 tick 数范围 1..600，一帧一个 tick，俯视图。
-- 同一执行者同一时间只能开一个录制，录完再开下一个。
-- 两个录制都默认写到 `<游戏目录>/circuit-charts/`，单人游戏还会弹出保存界面，可以改目录与文件名；服务端与控制台只写默认目录。
-- 单个方块变化过多时运行图只保留前 4096 次变化，并给出提示。
+- The `test start` message prints the simulation id, so you can copy it into `test stop <id>`. At most 4 simulations run at the same time.
+- The simulation needs a wire at that position or on one of its six neighbours, otherwise it reports "nothing to simulate here".
+- There are six finish reasons: stable, dead loop, stopped by hand, tick limit reached, time budget exceeded and error.
+- `run-chart` takes 1..2400 ticks over at most 16384 blocks; one column is one tick, one row is one block, colour and number show the state.
+- `run-video` takes 1..600 ticks, one frame per tick, top view.
+- One recorder per player at a time; start the next one after the previous finished.
+- Both recorders always write to `<game dir>/circuit-charts/`. In single player an in-game save screen lets you change the folder and the file name; a server or the console only uses the default folder.
+- A block with too many changes keeps only the first 4096 changes in the chart, with a warning.
 
 
-## 示例电路
+## Example circuits
 
-### 反相器
+### Inverter
 
 ```text
-[红石块 / 拉杆] ── 导线 ──→ [非门] ──→ 导线 ──→ [红石灯]
+[redstone block / lever] ── wire ──→ [NOT gate] ──→ wire ──→ [lamp]
 ```
 
-拉杆关时导线低、非门输出 15、灯亮；拉杆开时导线高、输出 0、灯灭。
+Lever off makes the wire LOW, the NOT gate outputs 15 and the lamp lights; lever on turns it off.
 
-### 两输入与门
+### Two-input AND gate
 
 ```text
-              [拉杆 #2]
-                  │  （接到门的左侧）
-[红石块] ── 导线 ──→ [与门] ──→ 导线 ──→ [红石灯]
+              [lever #2]
+                  │  (into the left side)
+[redstone block] ── wire ──→ [AND gate] ──→ wire ──→ [lamp]
 ```
 
-只有红石块通电且拉杆打开时灯才亮。左右都接上时左侧优先。
+The lamp lights only when the block is active and the lever is on. Feeding both sides makes the left
+side win.
 
-### 时钟闪灯
+### Clock blinker
 
 ```text
-[时钟] ──→ 导线 ──→ [红石灯]
+[clock] ──→ wire ──→ [lamp]
 ```
 
-`/circuit-set 10` 让它每 10 tick 闪一下，`/circuit-set 1` 则常亮。
+`/circuit-set 10` blinks every 10 ticks; `/circuit-set 1` is constant HIGH.
 
-### 扫描器数方块
+### Scanner counting blocks
 
 ```text
-[石头] [石头] [石头] [扫描器] ──→ 导线
+[stone] [stone] [stone] [scanner] ──→ wire
 ```
 
-三个石头都在左侧 15 格内，扫描器输出 3，上限 15。想输出固定值就在射线里放常量，同时注意别把输出用的导线放在射线上。
+The three stones are within 15 blocks to the left, so the scanner outputs 3, capped at 15. Put a
+constant on a ray for a fixed value, and keep the output wire off the rays.
 
-### 比较器判断 A 大于 B
+### Comparator checking A > B
 
 ```text
-                      [红石粉 强度 5]          ← 左方：模式 5（大于）
+                      [dust, strength 5]        ← left side: mode 5 (greater than)
                              │
-[常量 A=5]（后方）── [比较器] ──→ 导线 ──→ [红石灯]
+[constant A=5] (back) ── [comparator] ──→ wire ──→ [lamp]
                              │
-                      [常量 B=3]              ← 右方：B
+                      [constant B=3]            ← right side: B
 ```
 
-成立时输出 15 点亮灯；把两个常量对调，灯就灭。
+True outputs 15 and lights the lamp; swap the constants and it goes dark.
 
-### 数据线搬值
+### Moving a value with a data wire
 
 ```text
-[常量=7] ──→ [数据线→] ──→ [常量]
+[constant = 7] ──→ [data wire →] ──→ [constant]
 ```
 
-箭头指向右侧，所以 7 从背面进、写进正面的常量，用 `/circuit-read` 可以读到 7。把源头改成字符串 `"42"` 时正面的常量变 42；改成 `"abc"` 则数据线变红底错误贴图，目标不变。
+The arrow points right, so 7 enters from the back and is written into the constant in front; read it
+back with `/circuit-read`. A string source `"42"` makes the target constant 42, and `"abc"` turns the
+wire into the red error texture while the target stays unchanged.
 
-### 用数据线读写变量
+### Reading and writing a variable
 
 ```text
-[常量=7] ──→ [数据线→] ──→ [变量]   ← 变量未设置时自动变成 int 7
-[变量]   ──→ [数据线→] ──→ [常量]   ← 把变量的当前值搬进常量
+[constant = 7] ──→ [data wire →] ──→ [variable]   ← unset variable becomes int 7
+[variable]     ──→ [data wire →] ──→ [constant]   ← copies the current value
 ```
 
-也可以先 `/circuit-set int=0` 定好类型，再让数据线按该类型写。
+You can also fix the type first with `/circuit-set int=0` and let the data wire follow it.
 
-### 用悬空方块把红石铺在空中
+### Running dust through the air
 
 ```text
-[悬空方块] × N        ← 垫一层，红石粉必须有支撑否则会掉
-   ↑ 上面铺红石粉
-[红石粉] ── 接到门或导线
+[hover blocks] × N    ← a layer, dust needs support or it pops off
+   ↑ dust on top
+[dust] ── into a gate or wire
 ```
 
-玩家能穿过这层垫块，不会挡视角。
+You walk straight through the layer, so it does not block the view.
 
-### 用隐形告示牌标注电路
+### Labeling a circuit with a hidden sign
 
 ```text
-[隐形告示牌]   ← 放在任意位置，方块本体看不见
-    ↑ /circuit-set 时钟 10t
+[hidden sign]   ← place it anywhere, the block is invisible
+    ↑ /circuit-set clock 10t
 ```
 
-适合给分区、输入输出与时序参数做标记，不会挡住走线。
+Handy for naming sections, marking inputs and outputs, or writing down timing parameters without
+blocking wiring.
 
-## 常见问题与限制
+## FAQ and limitations
 
-### 常见问题
+### FAQ
 
-门接了信号却不输出，按顺序检查：朝向（输出面是否对着信号源，看彩色那一面）、输入面（A 在背面，B 在左右）、输入是否真的为 0（门只认大于 0）。
+A gate has a signal but does not output: check the direction first (the output face should not point
+at the source; look for the colored face), then the input faces (A on the back, B on the sides), then
+whether the input is really 0 (gates treat only above 0 as HIGH).
 
-比较器一直输出 0：后方与右方必须是常量方块，左方模式必须是 1..5，字符串与变量都不被接受。
+The comparator always outputs 0: the back and right sides must be constant blocks and the left side
+must be a level 1..5; strings and variables are not accepted.
 
-扫描器数字异常：先看射线上有没有常量（常量优先），再看上方是否有方块（上方优先），最后看左右是否都数到了东西（取较大者）。射线里的水、树叶、红石粉、导线、火把都会计数。
+The scanner shows a strange number: check for a constant on the rays first (a constant wins), then
+whether the up ray sees anything (the up count wins), then whether both sides counted something (the
+larger count is used). Water, leaves, dust, wires and torches all count.
 
-数据线不传值或变红：正面必须紧贴常量、字符串或变量；背面不能是空气，非数据方块一律按红石等级 0..15 处理；红底表示转换失败，多半是文本不是整数。
+A data wire does not transfer or turns red: the front must touch a constant, string or variable; the
+back must not be air, and any other block is read as a redstone level 0..15; a red texture means a
+conversion failure, usually text that is not an integer.
 
-变量与常量、字符串的区别：常量只能整数，字符串只能文本，变量一个方块两者都行且能被数据线写入。
+Constant, string or variable: a constant holds an integer, a string holds text, and a variable holds
+either type in one block and can be written by a data wire.
 
-`/circuit-set` 改了变量又变回去：有一根数据线在持续写它，先断开源头。
+A variable set with `/circuit-set` changes back: a data wire is still writing it every tick, so
+disconnect the source first.
 
-隐形告示牌怎么用：放下后 `/circuit-set 你好` 显示白色文字，`/circuit-set ""` 清空并显示灰色提示。
+How to use a hidden sign: place it and run `/circuit-set hello` to show white text; `/circuit-set ""`
+clears it and restores the grey hint.
 
-终端数量怎么算钱：按批计价，普通方块一批 1 个，悬空方块与纯色方块一批 16 个，数量必须是整批。
+How the amount is priced: by batches, 4 wires each. Most blocks are 1 per batch and hover and color
+blocks are 16 per batch, and the amount must be whole batches.
 
-### 已知限制
+### Known limitations
 
-- 原版红石粉不会朝本模组的导线绘制连接臂，但电气完全互通。
-- 与原版方块互操作受原版 20 Hz 采样限制。
-- 单张导线网络上限 4096 格，数据线串联上限 64 跳。
-- 每 tick 有求值预算，极端电路会延续到下一 tick 收敛。
-- 悬空方块能看穿，但光照上仍按实心方块算。
-- 改模组 id 会清空旧存档里旧 id 的方块，升级前先备份。
-- 美术是占位方案：纯色贴图与方向箭头，不是最终美术。
+- Vanilla dust never draws a connecting arm toward this mod's wires, although they are connected.
+- Interop with vanilla blocks runs at vanilla 20 Hz.
+- A single wire network is capped at 4096 positions and a data wire chain at 64 hops.
+- A per-tick evaluation budget exists, so extreme circuits continue on the next tick.
+- The hover block is see-through but still blocks light like a solid block.
+- Changing the mod id wipes old-id blocks in existing worlds; back up first.
+- The art is placeholder: flat colors and direction arrows, not final art.
 
-## 许可
+## License
 
-本项目使用 MIT 许可，全文见 [LICENSE](LICENSE)。
+MIT licensed; the full text is in [LICENSE](LICENSE).
 
-代码、资源与文档由 DeepSeek-v4.1-Flash 与 DeepSeekHarness 生成。
+Code, assets and documentation were generated by DeepSeek-v4.1-Flash and DeepSeekHarness.

@@ -1,6 +1,6 @@
 # Circuit Redstone - Logic · 开发文档入口
 
-**开发者向** | [玩家向中文](README.md) | [玩家向英文](README_EN.md)
+**开发者向** | [玩家向英文](README.md) | [玩家向中文](README_ZH.md)
 
 本文件只讲"怎么构建、怎么测、怎么调试、怎么发布"，玩家怎么玩不在这里。
 深入的技术细节（信号协议、更新调度、方块实体设计）见 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)。
